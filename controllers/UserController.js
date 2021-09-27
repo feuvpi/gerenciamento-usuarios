@@ -4,8 +4,8 @@ class UserController {
         
         this.formEl = document.getElementById(formId);
         this.tableEl = document.getElementById(tableId);
-        
         this.onSubmit();
+        this.onEdit();
     } // end of constructor
 
     onSubmit(){
@@ -53,6 +53,33 @@ class UserController {
 
 
     } //end of onSubmit method
+
+    
+    onEdit(){
+
+        document.querySelector("#box-user-edit .btn-edit-cancel").addEventListener("click", e=>{
+            console.log("deu certo");
+            this.showPanelCreate();
+        })
+        
+
+    } // End of onEditCancel method
+
+    showPanelCreate(){
+
+        document.querySelector("#box-user-create").style.display = "";
+        document.querySelector("#box-user-edit").style.display = "none";
+
+    } // End of showPanelCreate method
+
+
+    showPanelEdit(){
+
+        document.querySelector("#box-user-create").style.display = "none";
+        document.querySelector("#box-user-edit").style.display = "";
+
+    } // End of showPanelEdit method
+
 
     getPhoto(){
 
@@ -172,9 +199,17 @@ class UserController {
         this.tableEl.appendChild(tr);
 
         tr.querySelector(".btn-edit").addEventListener("click", e=>{
-            console.log(JSON.parse(tr.dataset.user));
-            document.querySelector("#box-user-create").style.display = "none";
-            document.querySelector("#box-user-edit").style.display = "";
+            
+            
+            let json = JSON.parse(tr.dataset.user);
+            let form = "";
+            for (let name in json){
+
+                    console.log("teste");
+
+            }
+
+            this.showPanelEdit();
         });
 
         

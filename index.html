@@ -210,12 +210,12 @@
                   <label>Gênero</label>
                   <div class="radio">
                     <label for="exampleInputGenderM">
-                      <input type="radio" id="exampleInputGenderM" name="gender">
+                      <input type="radio" id="exampleInputGenderM" name="gender" value="M">
                       Masculino</label>
                   </div>
                   <div class="radio">
                     <label for="exampleInputGenderF">
-                      <input type="radio" id="exampleInputGenderF" name="gender">
+                      <input type="radio" id="exampleInputGenderF" name="gender" value="F">
                       Feminino</label>
                   </div>
                 </div>
@@ -509,17 +509,18 @@
                 </div>
                 <div class="form-group">
                   <label>Gênero</label>
+
                   <div class="radio">
                     <label for="exampleInputGenderM">
-                      <input type="radio" id="exampleInputGenderM" name="gender">
+                      <input type="radio" id="exampleInputGenderM" value="M" name="gender" checked>
                       Masculino</label>
                   </div>
                   <div class="radio">
                     <label for="exampleInputGenderF">
-                      <input type="radio" id="exampleInputGenderF" name="gender">
-                      Feminino</label>
+                      <input type="radio" id="exampleInputGenderF" value="F" name="gender">Feminino</label>
                   </div>
                 </div>
+
                 <div class="form-group">
                   <label for="exampleInputBirth">Nascimento</label>
                   <input type="date" class="form-control" id="exampleInputBirth" name="birth">
@@ -792,7 +793,7 @@
               <!-- /.box-body -->          
               <div class="box-footer">
                 <button type="submit" class="btn btn-primary">Salvar</button>
-                <button type="button" class="btn btn-default">Cancelar</button>
+                <button type="button" class="btn btn-default btn-edit-cancel">Cancelar</button>
               </div>
             </form>
           </div>

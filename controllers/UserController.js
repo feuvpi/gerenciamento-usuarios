@@ -25,7 +25,7 @@ class UserController {
             
             if(values._name && values._birth && values._country && values._email && values._password && values._gender){
 
-                this.getPhoto().then(
+                this.getPhoto(this.formEl).then(
                     (content) => {
                     values.photo = content;
                     this.addLine(values);
@@ -56,16 +56,16 @@ class UserController {
     
     onEdit(){
 
-        document.querySelector("#box-user-edit .btn-edit-cancel").addEventListener("click", e=>{
+        document.querySelector("#box-user-edit .btn-edit-cancel").addEventListener("click", e=>{ //adiciona funcionalidade ao botao de cancelar do formulario de edição
             console.log("deu certo");
             this.showPanelCreate();
         });
 
-        this.formUpdateEl.addEventListener("submit", e=>{
+        this.formUpdateEl.addEventListener("submit", e=>{ //funcionalidade do botao submit do formulario de edicao
 
             e.preventDefault();
 
-            let btn = this.formUpdateEl.querySelector("[type=submit]");
+           let btn = this.formUpdateEl.querySelector("[type=submit]");
 
            btn.disabled = true;
 
@@ -73,36 +73,68 @@ class UserController {
 
            console.log(values);
 
-           let index = this.formUpdateEl.dataset.trIndex;
+           let index = this.formUpdateEl.dataset.trIndex; //metodo onEdit() chama o metodo addEventsTR(tr), que contem a linha: this.formUpdateEl.dataset.trIndex = this.tableEl.rows[index].sectionRowIndex;
+
+           console.log(index);
 
            let tr = this.tableEl.rows[index];
 
-           tr.dataset.user = JSON.stringify(values);
+           let userOld = JSON.parse(tr.dataset.user);
 
-           tr.innerHTML = `
+           let result = Object.assign({}, userOld, values);
+
+           if(!values.photo) result._photo = userOld._photo;
+
+           tr.dataset.user = JSON.stringify(result);
+
+           //return this._register.toLocaleDateString("en-US");
+
+          
+           
+           this.showPanelCreate();
+
+           this.getPhoto(this.formUpdateEl).then(
+               (content) => {
+
+                    if(!values.photo){
+                        result._photo = userOld._photo;
+                    } else {
+                        result._photo = content;
+                    }
+                    tr.innerHTML = `
     
-           <tr>
-           <td><img src="${values.photo}" alt="User Image" class="img-circle img-sm"></td>
-           <td>${values.name}</td>
-           <td>${values.email}</td>
-           <td>${values.admin}</td>
-           <td>${values.register}</td>
-           <td>
-               <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
-               <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
-           </td>
-           </tr>
+                        <tr>
+                            <td><img src="${result._photo}" alt="User Image" class="img-circle img-sm"></td>
+                            <td>${result._name}</td>
+                            <td>${result._email}</td>
+                            <td>${result._admin}</td>
+                            <td>${result._register.toLocaleDateString("en-US")}</td>
+                            <td>
+                                <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
+                                <button type="button" class="btn btn-danger btn-delete btn-xs btn-flat">Excluir</button>
+                            </td>
+                        </tr>
        
-       `;
+                        `;
    
-           this.tableEl.appendChild(tr);
+                    this.tableEl.appendChild(tr);
 
-           this.addEventsTR(tr);
+                    this.addEventsTR(tr);
+                    this.updateCount();
 
-           this.updateCount();
-        
-   
+                    this.formUpdateEl.reset;
+                    btn.disabled = false;
 
+                },
+
+            function(e){
+                    console.log(e);
+            }
+        )
+
+    
+
+           
 
         });
        
@@ -126,13 +158,13 @@ class UserController {
     } // End of showPanelEdit method
 
 
-    getPhoto(){
+    getPhoto(formEl){
 
         return new Promise((resolve, reject) => {
             
             let fileReader = new FileReader();
         
-            let elements = [...this.formEl.elements].filter(item =>{
+            let elements = [...formEl.elements].filter(item =>{
     
                 if(item.name === 'photo'){
                     return item;
@@ -182,7 +214,6 @@ class UserController {
             if(fields.name == "gender"){
                 if(fields.checked){
                     user[fields.name] = fields.value;
-                    console.log("esta pegando isto " + user.gender)
                 }
             } else if(fields.name == "admin"){
 
@@ -218,30 +249,48 @@ class UserController {
     } // end of getValues method
 
     
-  addEventsTR(tr){
+  addEventsTR(tr){ //metodo para pegar os valores da linha da tabela a ser editada e alimentar os campos do formulario de edição
 
-    tr.querySelector(".btn-edit").addEventListener("click", e=>{
+    tr.querySelector(".btn-delete").addEventListener("click", e=>{ //funcionalidade do botao delete
+
+        if(confirm("Tem certeza que deseja excluir?")){
+
+            tr.remove;
+            this.updateCount();
+
+        }
+
+    })
+    
+    
+    tr.querySelector(".btn-edit").addEventListener("click", e=>{ //funcionalidade botao de editar; this.tableEl.rows[index]; o querySelector esta pegando a linha da tabela aonde o botao "edit" foi clicado
             
-            
-        let json = JSON.parse(tr.dataset.user);
-        console.log(json);
-        let form = document.querySelector("#form-user-update");
+        console.log("antes do JSON.parse: ", tr); 
+        console.log("utilizando dataset.user: ", tr.dataset.user);
+        let json = JSON.parse(tr.dataset.user); //transformando o conteudo da linha da tabela em JSON
+    
+        console.log("apos o JSON.parse: ", json);
 
-        form.dataset.trIndex = tr.sectionRowIndex;
-        for (let name in json){
+        console.log("mesma coisa outra forma: ", JSON.parse(tr.dataset.user));
+        //let form = document.querySelector("#form-user-update");
 
-                let field = form.querySelector("[name=" + name.replace("_", "") + "]");
+        this.formUpdateEl.dataset.trIndex = tr.sectionRowIndex; //this.tableEl.rows[index].sectionRowIndex armazenando em variavel a index da linha em que o botao de editar foi clicado
+        console.log("index da linha que se pretende editar: ", tr.sectionRowIndex);
 
-                if(field){
+        for (let name in json){ //loop para varrer todos os atributos na variavel json 
 
+                let field = this.formUpdateEl.querySelector("[name=" + name.replace("_", "") + "]"); //utilizando os atributos da variavel json para encontrar os campos correspondentes no formulario
 
+                if(field){ //verificando se o campo atual existe
+
+                    //preenchendo os campos do formulario de edicao com os valores da linha da tabela encontrados 
                     switch (field.type) {
                         case 'file':
                             continue;
                             break;
                         
                         case 'radio':
-                            field = form.querySelector("[name=" + name.replace("_", "") + "][value=" + json[name] + "]");
+                            field = this.formUpdateEl.querySelector("[name=" + name.replace("_", "") + "][value=" + json[name] + "]");
                             field.checked = true;
                             break;
 
@@ -261,6 +310,9 @@ class UserController {
                 }
 
         }
+
+        this.formUpdateEl.querySelector(".photo").src = json._photo;
+        
 
         this.showPanelEdit();
     });
@@ -286,7 +338,7 @@ class UserController {
         <td>${dataUser.register}</td>
         <td>
             <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
-            <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
+            <button type="button" class="btn btn-danger btn-delete btn-xs btn-flat">Excluir</button>
         </td>
         </tr>
     

@@ -5,8 +5,10 @@ class UserController {
         this.formEl = document.getElementById(formIdCreate);
         this.formUpdateEl = document.getElementById(formIdUpdate);
         this.tableEl = document.getElementById(tableId);
+
         this.onSubmit();
         this.onEdit();
+        this.selectAll();
     } // end of constructor
 
     onSubmit(){
@@ -320,11 +322,56 @@ class UserController {
 
   }
     
+  
+  getUsersStorage(){
+
+    let users = [];
+    
+    if(sessionStorage.getItem("users")){
+
+        users = JSON.parse(sessionStorage.getItem("users"));
+
+    }
+
+    return users;
+
+  }
+  
+  
+  selectAll(){
+
+    let users = this.getUsersStorage();
+
+    users.forEach(dataUser=>{
+
+        let user = new User();
+
+        user.loadFromJSON(dataUser);
+        
+        this.addLine(user);
+
+   })
+
+  }
+  
+  
+  insert(data){ //metodo para inserir os dados da tabela atual na sessionStorage
+
+    let users = this.getUsersStorage();
+    
+    
+    users.push(data);
+    
+    sessionStorage.setItem("users", JSON.stringify(users));
+
+  } //end of insert method
     
     addLine(dataUser){
 
         
         let tr = document.createElement('tr');
+
+        this.insert(dataUser);
 
         tr.dataset.user = JSON.stringify(dataUser);
 

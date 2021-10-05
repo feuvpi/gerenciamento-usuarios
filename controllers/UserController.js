@@ -22,28 +22,27 @@ class UserController {
             event.preventDefault();
 
             let values = this.getValues(this.formEl);
-            
-            if(!values) return false;
-            
+
+            //if(!values) return false;
+
             if(values._name && values._birth && values._country && values._email && values._password && values._gender){
 
                 this.getPhoto(this.formEl).then(
                     (content) => {
                     values.photo = content;
+                    values.save();
                     this.addLine(values);
                 },
 
                 function(e){
                     console.log(e);
                 }
-            )
+            );
 
-            this.formEl.reset()
+            this.formEl.reset();
            btn.disabled = false;
 
-            }  else {
-                
-                
+            }  else {                
                 console.log(values);
                 btn.disabled = false;
                 alert("Necessita preencher campos!");
@@ -103,30 +102,21 @@ class UserController {
                     } else {
                         result._photo = content;
                     }
-                    tr.innerHTML = `
-    
-                        <tr>
-                            <td><img src="${result._photo}" alt="User Image" class="img-circle img-sm"></td>
-                            <td>${result._name}</td>
-                            <td>${result._email}</td>
-                            <td>${result._admin}</td>
-                            <td>${result._register.toLocaleDateString("en-US")}</td>
-                            <td>
-                                <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
-                                <button type="button" class="btn btn-danger btn-delete btn-xs btn-flat">Excluir</button>
-                            </td>
-                        </tr>
-       
-                        `;
+                    
+                    let user = new User();
+                    user.loadFromJSON(result);
+                    user.save();
+                    this.getTr(user, tr);
    
-                    this.tableEl.appendChild(tr);
+                    //this.tableEl.appendChild(tr);
 
-                    this.addEventsTR(tr);
                     this.updateCount();
 
                     this.formUpdateEl.reset;
+
                     btn.disabled = false;
 
+                    this.showPanelCreate();
                 },
 
             function(e){
@@ -209,8 +199,13 @@ class UserController {
             if(['name', 'email', 'password'].indexOf(fields.name) > -1 && !fields.value) {
 
                     fields.parentElement.classList.add('has-error');
+                    console.log("parou aqui");
                     isValid = false;
-                    //return false;
+                    return false;
+            } else {
+
+                fields.parentElement.classList.remove('has-error');
+
             }
             
             if(fields.name == "gender"){
@@ -250,19 +245,23 @@ class UserController {
 
     } // end of getValues method
 
-    
-  addEventsTR(tr){ //metodo para pegar os valores da linha da tabela a ser editada e alimentar os campos do formulario de edição
+  
+    addEventsTR(tr){ //metodo para pegar os valores da linha da tabela a ser editada e alimentar os campos do formulario de edição
 
     tr.querySelector(".btn-delete").addEventListener("click", e=>{ //funcionalidade do botao delete
 
+        console.log("debug do delete");
         if(confirm("Tem certeza que deseja excluir?")){
 
-            tr.remove;
+            let user = new User();
+            user.loadFromJSON(JSON.parse(tr.dataset.user));
+            user.remove();
+            tr.remove();
             this.updateCount();
 
         }
 
-    })
+    });
     
     
     tr.querySelector(".btn-edit").addEventListener("click", e=>{ //funcionalidade botao de editar; this.tableEl.rows[index]; o querySelector esta pegando a linha da tabela aonde o botao "edit" foi clicado
@@ -320,27 +319,12 @@ class UserController {
     });
 
 
-  }
-    
-  
-  getUsersStorage(){
-
-    let users = [];
-    
-    if(sessionStorage.getItem("users")){
-
-        users = JSON.parse(sessionStorage.getItem("users"));
-
-    }
-
-    return users;
-
-  }
+  } //end of addEventsTR() method
   
   
   selectAll(){
 
-    let users = this.getUsersStorage();
+    let users = User.getUsersStorage();
 
     users.forEach(dataUser=>{
 
@@ -350,54 +334,45 @@ class UserController {
         
         this.addLine(user);
 
-   })
+   });
 
   }
   
+  getTr(dataUser, tr = null){
+
+    if(tr === null) tr = document.createElement("tr");
+
+    tr.dataset.user = JSON.stringify(dataUser);
+    tr.innerHTML = `
+    
+    <tr>
+    <td><img src="${dataUser.photo}" alt="User Image" class="img-circle img-sm"></td>
+    <td>${dataUser.name}</td>
+    <td>${dataUser.email}</td>
+    <td>${dataUser.admin}</td>
+    <td>${dataUser.register}</td>
+    <td>
+        <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
+        <button type="button" class="btn btn-danger btn-delete btn-xs btn-flat">Excluir</button>
+    </td>
+    </tr>
+
+`;
+
+    return tr;
+
+  } //end of getTR method
+    
   
-  insert(data){ //metodo para inserir os dados da tabela atual na sessionStorage
-
-    let users = this.getUsersStorage();
-    
-    
-    users.push(data);
-    
-    sessionStorage.setItem("users", JSON.stringify(users));
-
-  } //end of insert method
-    
-    addLine(dataUser){
-
+  addLine(dataUser){
         
-        let tr = document.createElement('tr');
-
-        this.insert(dataUser);
-
-        tr.dataset.user = JSON.stringify(dataUser);
-
-        tr.innerHTML = `
-    
-        <tr>
-        <td><img src="${dataUser.photo}" alt="User Image" class="img-circle img-sm"></td>
-        <td>${dataUser.name}</td>
-        <td>${dataUser.email}</td>
-        <td>${dataUser.admin}</td>
-        <td>${dataUser.register}</td>
-        <td>
-            <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
-            <button type="button" class="btn btn-danger btn-delete btn-xs btn-flat">Excluir</button>
-        </td>
-        </tr>
-    
-    `;
+        let tr = this.getTr(dataUser);
 
         this.tableEl.appendChild(tr);
 
-      this.addEventsTR(tr);
-        
+        this.addEventsTR(tr);
 
         this.updateCount();
-
 
     } //end of addLine method
 
